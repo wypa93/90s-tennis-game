@@ -82,7 +82,7 @@ function mount(): void {
       <header class="top-bar">
         <div class="brand">
           <span class="brand__main">TÊNIS.BR</span>
-          <span class="brand__sub">quadra virtual — modo 1996</span>
+          <span class="brand__sub">quadra virtual — modo 1993</span>
         </div>
         <div class="header-meta">
           <span class="counter" title="decorativo">visitas: ${hit}</span>
@@ -154,7 +154,7 @@ function mount(): void {
       <footer class="footer">
         <span>Melhor visto em 800×600 (brincadeira)</span>
         <span class="sep">·</span>
-        <span>Feito pra Pascal &amp; Franciele</span>
+        <span>Feito por Pascal e ClaudeCode para Franciele</span>
       </footer>
     </div>
   `;
