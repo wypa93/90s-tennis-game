@@ -7,13 +7,23 @@ type Vec2 = { x: number; y: number };
 
 const MAX_SPEED = 520;
 const SPEED_BUMP_EVERY = 3;
-const SPEED_MULT = 1.055;
-/** How much |velocity| can exceed base MAX_SPEED after a long rally (time + hits). */
-const SPEED_LIMIT_MULT_MAX = 1.55;
-/** Approaches max extra speed over ~30s of play. */
-const TIME_RAMP_K = 0.022;
-/** Per second, adds this much to ball speed (px/s in canvas space) toward the current limit. */
-const SPEED_CREEP = 38;
+const SPEED_MULT = 1.058;
+/**
+ * Absolute ceiling (canvas px/s, before DPR) so the ball never becomes pure noise.
+ * ~2.9× base MAX — only reachable in long, extreme rallies.
+ */
+const SPEED_ABS_MAX = 1500;
+/** Per second of play, the speed limit also rises linearly (scaled by DPR in compute). */
+const SPEED_LIMIT_LINEAR_PER_S = 6.2;
+/** Per second, how fast |v| creeps toward the current limit (base units; × DPR in step). */
+const SPEED_CREEP = 54;
+
+function speedLimitAtTime(sessionTime: number, dpr: number): number {
+  const logBoost = 1 + Math.log(1 + sessionTime * 0.09) * 1.22;
+  const fromCurve = MAX_SPEED * dpr * logBoost;
+  const fromLinear = sessionTime * SPEED_LIMIT_LINEAR_PER_S * dpr;
+  return Math.min(SPEED_ABS_MAX * dpr, fromCurve + fromLinear);
+}
 
 export class RallyGame {
   private canvas: HTMLCanvasElement;
@@ -126,11 +136,7 @@ export class RallyGame {
     this.paddleX += (this.targetPaddleX - this.paddleX) * lerp;
 
     this.sessionTime += dt;
-    const timeExtra = Math.min(
-      SPEED_LIMIT_MULT_MAX - 1,
-      this.sessionTime * TIME_RAMP_K
-    );
-    const speedLimit = MAX_SPEED * this.dpr * (1 + timeExtra);
+    const speedLimit = speedLimitAtTime(this.sessionTime, this.dpr);
 
     this.ball.x += this.vel.x * dt;
     this.ball.y += this.vel.y * dt;
