@@ -122,85 +122,6 @@ body.crt-on .page {
   font-size: 1rem;
 }
 
-.macaw {
-  position: fixed;
-  top: 0.5rem;
-  right: 0.5rem;
-  z-index: 5;
-  filter: drop-shadow(2px 3px 0 var(--shadow));
-  pointer-events: none;
-  animation: macawRoam 16s ease-in-out infinite;
-  transform-origin: center center;
-}
-
-@keyframes macawRoam {
-  0%,
-  100% {
-    transform: translate(0, 0) rotate(-4deg);
-  }
-  20% {
-    transform: translate(calc(-12vw), 18px) rotate(2deg);
-  }
-  40% {
-    transform: translate(calc(-28vw), 4px) rotate(-6deg);
-  }
-  60% {
-    transform: translate(calc(-18vw), 22px) rotate(5deg);
-  }
-  80% {
-    transform: translate(calc(-6vw), 8px) rotate(-2deg);
-  }
-}
-
-.macaw-svg {
-  overflow: visible;
-}
-
-.macaw-wing {
-  transform-origin: 34px 38px;
-  animation: macawWingFlap 0.45s ease-in-out infinite alternate;
-}
-
-@keyframes macawWingFlap {
-  from {
-    transform: rotate(-8deg) translateY(0);
-  }
-  to {
-    transform: rotate(12deg) translateY(-2px);
-  }
-}
-
-.macaw-beak {
-  transform-origin: 12px 30px;
-  animation: macawBeak 2.8s ease-in-out infinite;
-}
-
-@keyframes macawBeak {
-  0%,
-  100% {
-    transform: rotate(0deg);
-  }
-  50% {
-    transform: rotate(-6deg);
-  }
-}
-
-@keyframes macawBlink {
-  0%,
-  92%,
-  100% {
-    opacity: 1;
-  }
-  94%,
-  96% {
-    opacity: 0.1;
-  }
-}
-
-.macaw-eye {
-  animation: macawBlink 4.5s infinite;
-}
-
 .panel {
   background: linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.5));
   border: 4px ridge var(--cream);
@@ -358,103 +279,6 @@ body.crt-on .page {
   z-index: 1;
   max-width: 420px;
   margin: 0 auto;
-}
-
-.court-mascots {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  pointer-events: none;
-  overflow: visible;
-}
-
-.leopard-rail {
-  position: relative;
-  z-index: 1;
-  height: 30px;
-  max-width: 420px;
-  margin: 0 auto;
-  overflow: hidden;
-  border-top: 2px dashed rgba(244, 208, 63, 0.12);
-}
-
-.leopard-prowl {
-  position: absolute;
-  bottom: 2px;
-  left: 0;
-  filter: drop-shadow(1px 2px 0 rgba(0, 0, 0, 0.5));
-  animation: leopardPace 11s linear infinite;
-}
-
-@keyframes leopardPace {
-  0% {
-    left: 4%;
-    transform: scaleX(1);
-  }
-  48% {
-    left: 72%;
-    transform: scaleX(1);
-  }
-  50% {
-    left: 72%;
-    transform: scaleX(-1);
-  }
-  98% {
-    left: 4%;
-    transform: scaleX(-1);
-  }
-  100% {
-    left: 4%;
-    transform: scaleX(1);
-  }
-}
-
-.floater-cheese {
-  position: absolute;
-  width: clamp(12px, 3.5vw, 18px);
-  height: clamp(12px, 3.5vw, 18px);
-  border-radius: 50%;
-  background: radial-gradient(circle at 32% 28%, #fff8e7, #e8c547 55%, #a67c00);
-  box-shadow: inset -2px -2px 0 rgba(0, 0, 0, 0.2), 0 2px 0 rgba(0, 0, 0, 0.35);
-  opacity: 0.88;
-  animation: cheeseBob 6.5s ease-in-out infinite;
-}
-
-.floater-cheese--a {
-  left: 12%;
-  top: 18%;
-  animation-delay: 0s;
-  animation-duration: 7s;
-}
-
-.floater-cheese--b {
-  left: 78%;
-  top: 42%;
-  animation-delay: -2.2s;
-  animation-duration: 8.5s;
-}
-
-.floater-cheese--c {
-  left: 44%;
-  top: 8%;
-  animation-delay: -4s;
-  animation-duration: 6s;
-}
-
-@keyframes cheeseBob {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  25% {
-    transform: translate(12px, -18px) scale(1.06);
-  }
-  50% {
-    transform: translate(-8px, 6px) scale(0.94);
-  }
-  75% {
-    transform: translate(6px, 14px) scale(1.02);
-  }
 }
 
 #gameCanvas {
@@ -673,6 +497,64 @@ body.crt-on .page {
   border-radius: 2px;
 }
 
+.wildlife-cameo {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 42;
+  overflow: hidden;
+}
+
+.wildlife-cameo.hidden {
+  display: none !important;
+}
+
+.wildlife-cameo__mover {
+  position: absolute;
+  left: 0;
+  width: max-content;
+  filter: drop-shadow(3px 3px 0 rgba(0, 0, 0, 0.45));
+  will-change: transform;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+  animation-duration: 3.2s;
+}
+
+.wildlife-dash--ltr {
+  animation-name: wildlifeDashLtr;
+}
+
+.wildlife-dash--rtl {
+  animation-name: wildlifeDashRtl;
+}
+
+@keyframes wildlifeDashLtr {
+  from {
+    transform: translate3d(-120px, 0, 0);
+  }
+  to {
+    transform: translate3d(calc(100vw + 120px), 0, 0);
+  }
+}
+
+@keyframes wildlifeDashRtl {
+  from {
+    transform: translate3d(calc(100vw + 120px), 0, 0);
+  }
+  to {
+    transform: translate3d(-120px, 0, 0);
+  }
+}
+
+.wildlife-cameo__flip {
+  display: flex;
+  align-items: center;
+}
+
+.wildlife-cameo__flip--on {
+  transform: scaleX(-1);
+}
+
 .footer {
   margin-top: 1.5rem;
   text-align: center;
@@ -685,17 +567,9 @@ body.crt-on .page {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .macaw,
-  .macaw-wing,
-  .macaw-beak,
   .jaguar-frame::before,
-  .leopard-prowl,
-  .floater-cheese {
+  .wildlife-cameo__mover {
     animation: none !important;
-  }
-
-  .macaw {
-    transform: none;
   }
 }
 

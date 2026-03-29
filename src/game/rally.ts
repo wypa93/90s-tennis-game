@@ -6,8 +6,14 @@ export type RallyCallbacks = {
 type Vec2 = { x: number; y: number };
 
 const MAX_SPEED = 520;
-const SPEED_BUMP_EVERY = 5;
-const SPEED_MULT = 1.06;
+const SPEED_BUMP_EVERY = 3;
+const SPEED_MULT = 1.055;
+/** How much |velocity| can exceed base MAX_SPEED after a long rally (time + hits). */
+const SPEED_LIMIT_MULT_MAX = 1.55;
+/** Approaches max extra speed over ~30s of play. */
+const TIME_RAMP_K = 0.022;
+/** Per second, adds this much to ball speed (px/s in canvas space) toward the current limit. */
+const SPEED_CREEP = 38;
 
 export class RallyGame {
   private canvas: HTMLCanvasElement;
@@ -30,9 +36,8 @@ export class RallyGame {
   private running = false;
   private raf = 0;
   private last = 0;
-
-  /** Cheese sparkle phase for ball draw */
-  private cheeseT = 0;
+  /** Seconds since this round started (drives time-based difficulty). */
+  private sessionTime = 0;
 
   constructor(canvas: HTMLCanvasElement, callbacks: RallyCallbacks) {
     const ctx = canvas.getContext("2d");
@@ -84,6 +89,7 @@ export class RallyGame {
     if (this.running) return;
     this.running = true;
     this.rally = 0;
+    this.sessionTime = 0;
     this.cb.onRallyChange(this.rally);
     this.resetBall();
     this.last = performance.now();
@@ -113,13 +119,18 @@ export class RallyGame {
   }
 
   private step(dt: number): void {
-    this.cheeseT += dt;
-
     const maxPx = this.w - this.paddleW / 2;
     const minPx = this.paddleW / 2;
     this.targetPaddleX = Math.min(maxPx, Math.max(minPx, this.targetPaddleX));
     const lerp = 1 - Math.pow(0.001, dt * 60);
     this.paddleX += (this.targetPaddleX - this.paddleX) * lerp;
+
+    this.sessionTime += dt;
+    const timeExtra = Math.min(
+      SPEED_LIMIT_MULT_MAX - 1,
+      this.sessionTime * TIME_RAMP_K
+    );
+    const speedLimit = MAX_SPEED * this.dpr * (1 + timeExtra);
 
     this.ball.x += this.vel.x * dt;
     this.ball.y += this.vel.y * dt;
@@ -150,12 +161,27 @@ export class RallyGame {
         this.rally += 1;
         this.cb.onRallyChange(this.rally);
         if (this.rally > 0 && this.rally % SPEED_BUMP_EVERY === 0) {
-          const m = Math.min(MAX_SPEED * this.dpr, Math.hypot(this.vel.x, this.vel.y) * SPEED_MULT);
+          const m = Math.min(speedLimit, Math.hypot(this.vel.x, this.vel.y) * SPEED_MULT);
           const len = Math.hypot(this.vel.x, this.vel.y) || 1;
           this.vel.x = (this.vel.x / len) * m;
           this.vel.y = (this.vel.y / len) * m;
         }
       }
+    }
+
+    let spd = Math.hypot(this.vel.x, this.vel.y);
+    if (spd > 0) {
+      const creep = SPEED_CREEP * this.dpr * dt;
+      const next = Math.min(speedLimit, spd + creep);
+      const k = next / spd;
+      this.vel.x *= k;
+      this.vel.y *= k;
+      spd = next;
+    }
+    if (spd > speedLimit) {
+      const k = speedLimit / spd;
+      this.vel.x *= k;
+      this.vel.y *= k;
     }
 
     if (this.ball.y - r > this.h) {
@@ -198,23 +224,23 @@ export class RallyGame {
     const bx = this.ball.x;
     const by = this.ball.y;
     const br = this.ballR;
-    const grd = ctx.createRadialGradient(bx - br * 0.3, by - br * 0.3, 0, bx, by, br);
-    grd.addColorStop(0, "#fff3c4");
-    grd.addColorStop(0.45, "#e8c547");
-    grd.addColorStop(1, "#b8860b");
+    const grd = ctx.createRadialGradient(bx - br * 0.35, by - br * 0.35, 0, bx, by, br);
+    grd.addColorStop(0, "#f8fff0");
+    grd.addColorStop(0.35, "#dfff6a");
+    grd.addColorStop(0.75, "#c8e020");
+    grd.addColorStop(1, "#9fb018");
     ctx.fillStyle = grd;
     ctx.beginPath();
     ctx.arc(bx, by, br, 0, Math.PI * 2);
     ctx.fill();
 
-    for (let i = 0; i < 4; i++) {
-      const a = this.cheeseT * 2 + i * 1.7;
-      const dx = Math.cos(a) * br * 0.35;
-      const dy = Math.sin(a * 0.9) * br * 0.35;
-      ctx.fillStyle = "rgba(180, 120, 30, 0.45)";
-      ctx.beginPath();
-      ctx.arc(bx + dx, by + dy, br * 0.12, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.92)";
+    ctx.lineWidth = Math.max(1, this.dpr * 1.1);
+    ctx.beginPath();
+    ctx.arc(bx, by, br * 0.88, -0.25 * Math.PI, 0.65 * Math.PI);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.arc(bx, by, br * 0.88, 0.85 * Math.PI, 1.75 * Math.PI);
+    ctx.stroke();
   }
 }

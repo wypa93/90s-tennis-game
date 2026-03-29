@@ -72,6 +72,66 @@ function scheduleLula(cameo: HTMLElement): void {
   }, delay);
 }
 
+const SVG_LEOPARD = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 28" width="90" height="35" aria-hidden="true">
+  <ellipse cx="36" cy="16" rx="28" ry="11" fill="#c9a227"/>
+  <ellipse cx="52" cy="10" rx="8" ry="7" fill="#c9a227"/>
+  <circle cx="56" cy="8" r="1.4" fill="#111"/>
+  <circle cx="22" cy="14" r="3.5" fill="#5c4a1a"/>
+  <circle cx="34" cy="17" r="2.8" fill="#3d2914"/>
+  <circle cx="14" cy="18" r="2.2" fill="#3d2914"/>
+  <ellipse cx="44" cy="20" rx="6" ry="5" fill="#a67c00"/>
+</svg>`;
+
+const SVG_PARROT = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 76 42" width="88" height="48" aria-hidden="true">
+  <path d="M8 26 Q4 22 10 18 L22 20 Q38 8 52 14 L58 10 L62 16 L48 22 Q44 28 38 30 L24 34 Q14 36 8 26" fill="#1e6b32"/>
+  <ellipse cx="40" cy="22" rx="14" ry="10" fill="#c41e3a"/>
+  <circle cx="32" cy="20" r="4" fill="#111"/>
+  <circle cx="33" cy="19" r="1.3" fill="#fff"/>
+  <path d="M22 24 L12 28 L10 22 Z" fill="#f4d03f"/>
+  <path d="M58 14 L68 12 L64 20 Z" fill="#145a24"/>
+</svg>`;
+
+const SVG_MONKEY = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 40" width="64" height="50" aria-hidden="true">
+  <path d="M8 28 Q6 8 22 6 Q28 4 34 8 Q40 6 44 12 Q48 18 46 26 Q44 34 36 36 L28 38 Q16 38 8 28" fill="#6b5344"/>
+  <circle cx="26" cy="14" r="10" fill="#8b7355"/>
+  <ellipse cx="26" cy="16" rx="8" ry="7" fill="#c4a882"/>
+  <circle cx="22" cy="14" r="1.8" fill="#111"/>
+  <circle cx="30" cy="14" r="1.8" fill="#111"/>
+  <path d="M44 18 Q52 14 50 24 Q48 30 42 28" fill="none" stroke="#5c4a3a" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="18" cy="34" rx="5" ry="4" fill="#6b5344"/>
+</svg>`;
+
+function scheduleWildlife(layer: HTMLElement, mover: HTMLElement): void {
+  const svgs = [SVG_LEOPARD, SVG_PARROT, SVG_MONKEY];
+  const scheduleNext = (): void => {
+    const delay = 22_000 + Math.random() * 38_000;
+    window.setTimeout(run, delay);
+  };
+  const run = (): void => {
+    const svg = svgs[Math.floor(Math.random() * svgs.length)] ?? SVG_PARROT;
+    const rtl = Math.random() < 0.5;
+    const bottomPct = 10 + Math.random() * 52;
+    const durationMs = 2800 + Math.random() * 1400;
+
+    mover.style.bottom = `${bottomPct}%`;
+    mover.style.animationDuration = `${durationMs}ms`;
+    mover.className = "wildlife-cameo__mover";
+    mover.classList.add(rtl ? "wildlife-dash--rtl" : "wildlife-dash--ltr");
+    mover.innerHTML = `<div class="wildlife-cameo__flip${rtl ? " wildlife-cameo__flip--on" : ""}">${svg}</div>`;
+
+    layer.classList.remove("hidden");
+    layer.setAttribute("aria-hidden", "false");
+
+    window.setTimeout(() => {
+      layer.classList.add("hidden");
+      layer.setAttribute("aria-hidden", "true");
+      mover.innerHTML = "";
+      scheduleNext();
+    }, durationMs + 80);
+  };
+  scheduleNext();
+}
+
 function mount(): void {
   const root = el<HTMLDivElement>("#app");
   const hit = String(Math.floor(Math.random() * 900_000) + 100_000);
@@ -89,17 +149,6 @@ function mount(): void {
           <label class="toggle-crt"><input type="checkbox" id="crtToggle" /> CRT</label>
         </div>
       </header>
-
-      <div class="macaw" aria-hidden="true" title="arara">
-        <svg viewBox="0 0 64 64" width="56" height="56" class="macaw-svg">
-          <ellipse cx="28" cy="36" rx="18" ry="14" fill="#c41e3a"/>
-          <ellipse cx="38" cy="34" rx="14" ry="12" fill="#1e6b32"/>
-          <ellipse class="macaw-wing" cx="40" cy="38" rx="10" ry="6" fill="#145a24" opacity="0.95"/>
-          <circle cx="22" cy="32" r="5" fill="#111"/>
-          <circle class="macaw-eye" cx="23" cy="31" r="1.6" fill="#fff"/>
-          <path class="macaw-beak" d="M8 34 Q2 30 6 26 Q12 28 14 34" fill="#f4d03f"/>
-        </svg>
-      </div>
 
       <section class="panel intro" id="introPanel">
         <h1>Quem está jogando?</h1>
@@ -119,25 +168,6 @@ function mount(): void {
         <div class="court-shell jaguar-frame">
           <div class="court-inner">
             <canvas id="gameCanvas" width="320" height="440"></canvas>
-            <div class="court-mascots" aria-hidden="true">
-              <span class="floater-cheese floater-cheese--a"></span>
-              <span class="floater-cheese floater-cheese--b"></span>
-              <span class="floater-cheese floater-cheese--c"></span>
-            </div>
-          </div>
-          <div class="leopard-rail" aria-hidden="true">
-            <div class="leopard-prowl" title="onça pintada">
-              <svg viewBox="0 0 56 24" width="48" height="22" aria-hidden="true">
-                <ellipse cx="28" cy="14" rx="22" ry="10" fill="#b8860b"/>
-                <circle cx="38" cy="10" r="4" fill="#b8860b"/>
-                <circle cx="41" cy="9" r="1.2" fill="#111"/>
-                <ellipse cx="18" cy="12" rx="4" ry="3" fill="#8b6914"/>
-                <circle cx="22" cy="9" r="2.2" fill="#3d2914"/>
-                <circle cx="30" cy="15" r="2" fill="#3d2914"/>
-                <circle cx="14" cy="16" r="1.8" fill="#3d2914"/>
-                <ellipse cx="34" cy="18" rx="5" ry="4" fill="#8b6914"/>
-              </svg>
-            </div>
           </div>
           <div class="touch-bar">
             <button type="button" class="touch-btn" id="btnLeft" aria-label="Esquerda">◀</button>
@@ -173,6 +203,10 @@ function mount(): void {
         </div>
       </div>
 
+      <div class="wildlife-cameo hidden" id="wildlifeCameo" aria-hidden="true">
+        <div class="wildlife-cameo__mover" id="wildlifeMover"></div>
+      </div>
+
       <footer class="footer">
         <span>Melhor visto em 800×600 (brincadeira)</span>
         <span class="sep">·</span>
@@ -192,6 +226,8 @@ function mount(): void {
   const submitHint = el<HTMLElement>("#submitHint");
   const crtToggle = el<HTMLInputElement>("#crtToggle");
   const lulaCameo = el<HTMLElement>("#lulaCameo");
+  const wildlifeCameo = el<HTMLElement>("#wildlifeCameo");
+  const wildlifeMover = el<HTMLElement>("#wildlifeMover");
 
   let currentPlayer = loadPlayer();
   let game: RallyGame | null = null;
@@ -332,6 +368,7 @@ function mount(): void {
   });
 
   scheduleLula(lulaCameo);
+  scheduleWildlife(wildlifeCameo, wildlifeMover);
 
   if (currentPlayer) showPlay(currentPlayer);
 }
