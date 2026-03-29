@@ -8,6 +8,26 @@ import {
 } from "./leaderboard";
 
 const STORAGE_KEY = "tennis-br-90-player";
+const STORAGE_GATE = "tennis-br-90-gate";
+
+function hasGateAccess(): boolean {
+  return localStorage.getItem(STORAGE_GATE) === "1";
+}
+
+function setGateAccess(): void {
+  localStorage.setItem(STORAGE_GATE, "1");
+}
+
+/** Accepts paodequeijo; also "pão de queijo" etc. (no spaces, case, accents). */
+function isMagicWord(input: string): boolean {
+  const n = input
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/\s+/g, "");
+  return n === "paodequeijo";
+}
 
 function loadPlayer(): PlayerId | null {
   const v = localStorage.getItem(STORAGE_KEY);
@@ -160,8 +180,53 @@ function scheduleWildlife(layer: HTMLElement, mover: HTMLElement): void {
   scheduleNext();
 }
 
+function showGate(root: HTMLElement): void {
+  root.innerHTML = `
+    <div class="gate-screen">
+      <div class="gate-panel panel">
+        <p class="gate-kicker">Psst…</p>
+        <h1 class="gate-title">Qual é a palavra mágica?</h1>
+        <p class="gate-tease">A quadra VIP não abre pra qualquer um. Sussurre o segredo mineiro e a gente deixa você passar.</p>
+        <form class="gate-form" id="gateForm" autocomplete="off">
+          <label class="gate-label" for="magicInput">Palavra mágica</label>
+          <input class="gate-input" id="magicInput" name="magic" type="text" inputmode="text" placeholder="…?" autofocus />
+          <button type="submit" class="btn gate-submit">Abracadabra — entrar</button>
+        </form>
+        <p class="gate-error hidden" id="gateError" role="alert"></p>
+      </div>
+    </div>
+  `;
+
+  const form = root.querySelector<HTMLFormElement>("#gateForm");
+  const input = root.querySelector<HTMLInputElement>("#magicInput");
+  const err = root.querySelector<HTMLElement>("#gateError");
+  if (!form || !input || !err) return;
+
+  const fail = (msg: string): void => {
+    err.textContent = msg;
+    err.classList.remove("hidden");
+    input.select();
+  };
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    err.classList.add("hidden");
+    if (isMagicWord(input.value)) {
+      setGateAccess();
+      mount();
+    } else {
+      fail("Essa não colou! Tenta de novo…");
+    }
+  });
+}
+
 function mount(): void {
   const root = el<HTMLDivElement>("#app");
+  if (!hasGateAccess()) {
+    showGate(root);
+    return;
+  }
+
   const hit = String(Math.floor(Math.random() * 900_000) + 100_000);
 
   root.innerHTML = `
