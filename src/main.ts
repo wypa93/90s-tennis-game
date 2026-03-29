@@ -91,12 +91,13 @@ function mount(): void {
       </header>
 
       <div class="macaw" aria-hidden="true" title="arara">
-        <svg viewBox="0 0 64 64" width="56" height="56">
+        <svg viewBox="0 0 64 64" width="56" height="56" class="macaw-svg">
           <ellipse cx="28" cy="36" rx="18" ry="14" fill="#c41e3a"/>
           <ellipse cx="38" cy="34" rx="14" ry="12" fill="#1e6b32"/>
+          <ellipse class="macaw-wing" cx="40" cy="38" rx="10" ry="6" fill="#145a24" opacity="0.95"/>
           <circle cx="22" cy="32" r="5" fill="#111"/>
           <circle class="macaw-eye" cx="23" cy="31" r="1.6" fill="#fff"/>
-          <path d="M8 34 Q2 30 6 26 Q12 28 14 34" fill="#f4d03f"/>
+          <path class="macaw-beak" d="M8 34 Q2 30 6 26 Q12 28 14 34" fill="#f4d03f"/>
         </svg>
       </div>
 
@@ -116,7 +117,28 @@ function mount(): void {
           <button type="button" class="btn btn-ghost" id="changePlayer">Trocar jogador</button>
         </div>
         <div class="court-shell jaguar-frame">
-          <canvas id="gameCanvas" width="320" height="440"></canvas>
+          <div class="court-inner">
+            <canvas id="gameCanvas" width="320" height="440"></canvas>
+            <div class="court-mascots" aria-hidden="true">
+              <span class="floater-cheese floater-cheese--a"></span>
+              <span class="floater-cheese floater-cheese--b"></span>
+              <span class="floater-cheese floater-cheese--c"></span>
+            </div>
+          </div>
+          <div class="leopard-rail" aria-hidden="true">
+            <div class="leopard-prowl" title="onça pintada">
+              <svg viewBox="0 0 56 24" width="48" height="22" aria-hidden="true">
+                <ellipse cx="28" cy="14" rx="22" ry="10" fill="#b8860b"/>
+                <circle cx="38" cy="10" r="4" fill="#b8860b"/>
+                <circle cx="41" cy="9" r="1.2" fill="#111"/>
+                <ellipse cx="18" cy="12" rx="4" ry="3" fill="#8b6914"/>
+                <circle cx="22" cy="9" r="2.2" fill="#3d2914"/>
+                <circle cx="30" cy="15" r="2" fill="#3d2914"/>
+                <circle cx="14" cy="16" r="1.8" fill="#3d2914"/>
+                <ellipse cx="34" cy="18" rx="5" ry="4" fill="#8b6914"/>
+              </svg>
+            </div>
+          </div>
           <div class="touch-bar">
             <button type="button" class="touch-btn" id="btnLeft" aria-label="Esquerda">◀</button>
             <button type="button" class="btn btn-start" id="btnStart">SERVIR</button>
@@ -291,9 +313,13 @@ function mount(): void {
   el<HTMLButtonElement>("#btnSubmit").addEventListener("click", async () => {
     if (!currentPlayer || submittedForLast) return;
     const ok = await submitScore(currentPlayer, lastFinal);
-    submittedForLast = true;
-    submitHint.textContent = ok ? "Salvo! Atualize o ranking." : "Não rolou salvar — rede ou config.";
-    void refreshLb();
+    if (ok) {
+      submittedForLast = true;
+      void refreshLb();
+      modal.classList.add("hidden");
+    } else {
+      submitHint.textContent = "Não rolou salvar — rede ou config.";
+    }
   });
 
   const savedCrt = localStorage.getItem("tennis-br-90-crt") === "1";
