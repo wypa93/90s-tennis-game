@@ -5,21 +5,20 @@ export type RallyCallbacks = {
 
 type Vec2 = { x: number; y: number };
 
-const MAX_SPEED = 520;
+const MAX_SPEED = 450;
 const SPEED_BUMP_EVERY = 3;
-const SPEED_MULT = 1.058;
+const SPEED_MULT = 1.048;
 /**
  * Absolute ceiling (canvas px/s, before DPR) so the ball never becomes pure noise.
- * ~2.9× base MAX — only reachable in long, extreme rallies.
  */
-const SPEED_ABS_MAX = 1500;
+const SPEED_ABS_MAX = 1280;
 /** Per second of play, the speed limit also rises linearly (scaled by DPR in compute). */
-const SPEED_LIMIT_LINEAR_PER_S = 6.2;
+const SPEED_LIMIT_LINEAR_PER_S = 5;
 /** Per second, how fast |v| creeps toward the current limit (base units; × DPR in step). */
-const SPEED_CREEP = 54;
+const SPEED_CREEP = 44;
 
 function speedLimitAtTime(sessionTime: number, dpr: number): number {
-  const logBoost = 1 + Math.log(1 + sessionTime * 0.09) * 1.22;
+  const logBoost = 1 + Math.log(1 + sessionTime * 0.075) * 1.08;
   const fromCurve = MAX_SPEED * dpr * logBoost;
   const fromLinear = sessionTime * SPEED_LIMIT_LINEAR_PER_S * dpr;
   return Math.min(SPEED_ABS_MAX * dpr, fromCurve + fromLinear);
@@ -123,7 +122,7 @@ export class RallyGame {
     this.ball.x = this.w / 2;
     this.ball.y = this.h * 0.35;
     const angle = ((Math.random() - 0.5) * 0.9 + 0.5) * Math.PI;
-    const speed = 220 * this.dpr;
+    const speed = 188 * this.dpr;
     this.vel.x = Math.cos(angle) * speed * (Math.random() > 0.5 ? 1 : -1);
     this.vel.y = Math.sin(angle) * speed;
   }
@@ -163,7 +162,7 @@ export class RallyGame {
         this.ball.y = py - r;
         const offset = (this.ball.x - (px + this.paddleW / 2)) / (this.paddleW / 2);
         this.vel.y = -Math.abs(this.vel.y);
-        this.vel.x += offset * 140 * this.dpr;
+        this.vel.x += offset * 118 * this.dpr;
         this.rally += 1;
         this.cb.onRallyChange(this.rally);
         if (this.rally > 0 && this.rally % SPEED_BUMP_EVERY === 0) {
